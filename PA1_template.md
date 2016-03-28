@@ -1,53 +1,75 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
-```{r, echo=TRUE}
+
+```r
 library(ggplot2)
 activity <- read.csv(file = "activity.csv", head = TRUE, sep = ",", stringsAsFactors = FALSE)
-
 ```
 
 ## What is mean total number of steps taken per day?
 
 1. Make a histogram of the total number of steps taken each day
 
-```{r, echo=TRUE}
+
+```r
 aggdata <- aggregate(x = activity$steps, by = list(date = activity$date), FUN = "sum")
 ggplot(data = aggdata, aes(x = aggdata$x)) + geom_histogram()
 ```
 
+```
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
 2. Calculate and report the mean and median total number of steps taken per day
 
 Mean: 10766.19, Median: 10765
-```{r, echo=TRUE}
-mean(aggdata$x, na.rm = TRUE)
 
+```r
+mean(aggdata$x, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(aggdata$x, na.rm = TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
 
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r, echo=TRUE}
+
+```r
 complete <- activity[complete.cases(activity$steps), ]
 aggdata2 <- aggregate(x = complete$steps, by = list(interval = complete$interval), FUN = "mean")
 ggplot(data = aggdata2, aes(interval, x)) + geom_line() + xlab("5-minute interval") + ylab("Average steps across all days") + scale_x_continuous(breaks = round(seq(min(aggdata2$interval), max(aggdata2$interval), by = 250), 1))
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 Interval '835' has the maximum number of steps:
 
-```{r, echo=TRUE}
+
+```r
 aggdata2[which.max(aggdata2$x), ]
+```
+
+```
+##     interval        x
+## 104      835 206.1698
 ```
 
 
@@ -57,10 +79,13 @@ aggdata2[which.max(aggdata2$x), ]
 
 2304 rows with NAs
 
-```{r, echo=TRUE}
 
+```r
 sum(!complete.cases(activity))
+```
 
+```
+## [1] 2304
 ```
 
 
@@ -71,8 +96,8 @@ Strategy to use: Set NAs values with the mean of the 5-minute interval.
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r, echo=TRUE}
 
+```r
 activity2 <- activity
 
 complete <- activity[complete.cases(activity$steps), ]
@@ -89,20 +114,48 @@ for(i in 1:nrow(activity2)){
 head(activity2)
 ```
 
+```
+##       steps       date interval
+## 1 1.7169811 2012-10-01        0
+## 2 0.3396226 2012-10-01        5
+## 3 0.1320755 2012-10-01       10
+## 4 0.1509434 2012-10-01       15
+## 5 0.0754717 2012-10-01       20
+## 6 2.0943396 2012-10-01       25
+```
+
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 Histogram of steps taken each day
-```{r, echo=TRUE}
+
+```r
 aggdata3 <- aggregate(x = activity2$steps, by = list(date = activity2$date), FUN = "sum")
 ggplot(data = aggdata3, aes(x = aggdata3$x)) + geom_histogram()
 ```
 
-Mean: 10766.19, Median: 10766.19
-```{r, echo=TRUE}
-mean(aggdata3$x)
+```
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
+
+Mean: 10766.19, Median: 10766.19
+
+```r
+mean(aggdata3$x)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(aggdata3$x)
+```
+
+```
+## [1] 10766.19
 ```
 
 As we can see, the Median value increases when imputing NA values, while the Mean value stays the same. 
@@ -112,7 +165,8 @@ As we can see, the Median value increases when imputing NA values, while the Mea
 
 1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r, echo=TRUE}
+
+```r
 activity2$date <- as.Date(activity2$date)
 #create a vector of weekdays
 weekdays <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
@@ -122,58 +176,23 @@ activity2$dayOfWeek <- factor((weekdays(activity2$date) %in% weekdays), levels=c
 head(activity2)
 ```
 
+```
+##       steps       date interval dayOfWeek
+## 1 1.7169811 2012-10-01        0   weekday
+## 2 0.3396226 2012-10-01        5   weekday
+## 3 0.1320755 2012-10-01       10   weekday
+## 4 0.1509434 2012-10-01       15   weekday
+## 5 0.0754717 2012-10-01       20   weekday
+## 6 2.0943396 2012-10-01       25   weekday
+```
+
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was created using simulated data:
 
-```{r, echo=FALSE}
-# Multiple plot function
-#
-# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
-# - cols:   Number of columns in layout
-# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
-#
-# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
-# then plot 1 will go in the upper left, 2 will go in the upper right, and
-# 3 will go all the way across the bottom.
-#
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  library(grid)
 
-  # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
 
-  numPlots = length(plots)
 
-  # If layout is NULL, then use 'cols' to determine layout
-  if (is.null(layout)) {
-    # Make the panel
-    # ncol: Number of columns of plots
-    # nrow: Number of rows needed, calculated from # of cols
-    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                    ncol = cols, nrow = ceiling(numPlots/cols))
-  }
-
- if (numPlots==1) {
-    print(plots[[1]])
-
-  } else {
-    # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
-
-    # Make each plot, in the correct location
-    for (i in 1:numPlots) {
-      # Get the i,j matrix positions of the regions that contain this subplot
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
-    }
-  }
-}
-```
-
-```{r, echo=TRUE}
+```r
 dataWeekdays <- activity2[which(activity2$dayOfWeek == "weekday"), ]
 dataWeekends <- activity2[which(activity2$dayOfWeek == "weekend"), ]
 aggdataWeekdays <- aggregate(x = dataWeekdays$steps, by = list(interval = dataWeekdays$interval), FUN = "mean")
@@ -185,3 +204,5 @@ g2 <- ggplot(data = aggdataWeekdays, aes(interval, x)) + geom_line() + xlab("Int
 
 multiplot(g1, g2, cols=1)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
